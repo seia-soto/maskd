@@ -3,6 +3,7 @@ const useCORS = require('@koa/cors')
 const useJSON = require('koa-json')
 const debug = require('debug')
 
+const routers = require('./routers')
 const structures = require('./structures')
 const config = require('./config')
 const pkg = require('./package')
@@ -19,6 +20,7 @@ const initFn = async () => {
   app
     .use(useJSON({ pretty: false }))
     .use(useCORS(/* Use request origin header. */))
+    .use(routers.routes())
     .listen(config.app.port, () => app.context.debug(`starting 'maskd' API server at ${Date.now()}.`))
 }
 
