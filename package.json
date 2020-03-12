@@ -1,0 +1,17 @@
+{
+  "name": "maskd",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Seia-Soto <seia@outlook.kr>",
+  "license": "MIT",
+  "dependencies": {
+    "@koa/cors": "^3.0.0",
+    "@koa/router": "^8.0.8",
+    "cross-env": "^7.0.2",
+    "debug": "^4.1.1",
+    "knex": "^0.20.11",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-json": "^2.0.2"
+  }
+}
