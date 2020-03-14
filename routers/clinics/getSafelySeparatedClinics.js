@@ -8,11 +8,11 @@ module.exports = async ctx => {
   // body.keyword = `%${body.keyword}%`
 
   if (!body.keyword) {
-    const rows = await knex('SelectionClinics')
+    const rows = await knex('SafelySeparatedClinics')
 
     ctx.body = rows
   } else {
-    const rows = await knex('SelectionClinics')
+    const rows = await knex('SafelySeparatedClinics')
       .where(body.scope, 'like', `%${body.keyword}%`)
 
     ctx.body = rows

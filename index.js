@@ -11,6 +11,7 @@ const pkg = require('./package')
 const app = new Koa()
 
 const {
+  SafelySeparatedClinics,
   SelectionClinic
 } = structures.reports
 
@@ -19,7 +20,8 @@ app.context.debug = debug(pkg.name)
 app.context.pkg = pkg
 
 app.context.workers = {
-  SelectionClinic: new SelectionClinic
+  SafelySeparatedClinics: new SafelySeparatedClinics(),
+  SelectionClinic: new SelectionClinic()
 }
 
 const initFn = async () => {

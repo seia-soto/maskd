@@ -5,7 +5,7 @@
   "author": "Seia-Soto <seia@outlook.kr>",
   "license": "MIT",
   "scripts": {
-    "start": "cross-env DEBUG=maskd node .",
+    "start": "cross-env DEBUG=maskd* node .",
     "debug": "cross-env DEBUG=* node ."
   },
   "dependencies": {
