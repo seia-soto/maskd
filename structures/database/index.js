@@ -1,2 +1,2 @@
-module.exports = require('./knex')
 module.exports.createTables = require('./createTables')
+module.exports.knex = require('./knex')

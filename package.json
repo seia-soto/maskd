@@ -4,14 +4,22 @@
   "main": "index.js",
   "author": "Seia-Soto <seia@outlook.kr>",
   "license": "MIT",
+  "scripts": {
+    "start": "cross-env DEBUG=maskd node .",
+    "debug": "cross-env DEBUG=* node ."
+  },
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "@koa/router": "^8.0.8",
     "cross-env": "^7.0.2",
+    "csv-parser": "^2.3.2",
     "debug": "^4.1.1",
+    "iconv-lite": "^0.5.1",
     "knex": "^0.20.11",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
-    "koa-json": "^2.0.2"
+    "koa-json": "^2.0.2",
+    "node-fetch": "^2.6.0",
+    "sqlite3": "^4.1.1"
   }
 }

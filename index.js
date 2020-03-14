@@ -10,9 +10,17 @@ const pkg = require('./package')
 
 const app = new Koa()
 
+const {
+  SelectionClinic
+} = structures.reports
+
 app.context.config = config
 app.context.debug = debug(pkg.name)
 app.context.pkg = pkg
+
+app.context.workers = {
+  SelectionClinic: new SelectionClinic
+}
 
 const initFn = async () => {
   await structures.database.createTables()
@@ -21,6 +29,7 @@ const initFn = async () => {
     .use(useJSON({ pretty: false }))
     .use(useCORS(/* Use request origin header. */))
     .use(routers.routes())
+    .use(routers.allowedMethods())
     .listen(config.app.port, () => app.context.debug(`starting 'maskd' API server at ${Date.now()}.`))
 }
 

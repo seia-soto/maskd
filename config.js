@@ -7,5 +7,8 @@ module.exports = {
     connection: {
       filename: './bin/sample.db'
     }
+  },
+  cache: {
+    directory: './bin/caches'
   }
 }
