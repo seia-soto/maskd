@@ -156,7 +156,7 @@ class MaskStores {
       const latestItem = latestData[i]
       const existingItem = existingData.find(item => item.identify === Number(latestItem.code))
 
-      if (existingItem && new Date(latestItem.created_at).getTime() > existingItem.updatedAt + 1000 * 60 * 60 * 9) {
+      if (existingItem && (!latestItem.stockUpdatedAt || new Date(latestItem.created_at).getTime() > existingItem.updatedAt + 1000 * 60 * 60 * 9)) {
         updateQueue.push({
           identify: latestItem.code,
           data: {
