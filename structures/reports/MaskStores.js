@@ -102,7 +102,7 @@ class MaskStores {
               stockReplenishedAt: new Date(item.stock_at),
               stockStatus: item.remain_stat,
               stockUpdatedAt: new Date(item.created_at),
-              updatedAt: now
+              updatedAt: new Date(now)
             })
             .where({
               identify: item.code || ''
