@@ -102,7 +102,7 @@ Get the list of available selection clinics.
 ]
 ```
 
-#### POST: /clinics/safelySeparated
+### POST: /clinics/safelySeparated
 
 Get the list of available safely separated clinics.
 
