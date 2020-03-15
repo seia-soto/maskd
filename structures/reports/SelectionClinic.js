@@ -89,6 +89,8 @@ class SelectionClinic {
           })
       }
     }
+
+    this.debug('updated the situation report')
   }
 }
 

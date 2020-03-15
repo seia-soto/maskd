@@ -91,6 +91,8 @@ class SafelySeparatedClinics {
           })
       }
     }
+
+    this.debug('updated the situation report')
   }
 }
 
