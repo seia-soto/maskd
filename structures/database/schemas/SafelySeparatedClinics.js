@@ -1,6 +1,8 @@
 module.exports = async knex => {
   // NOTE: 보건복지부 국민안심병원
   await knex.schema.createTable('SafelySeparatedClinics', table => {
+    table.increments()
+
     // NOTE: 연차
     table.integer('identify')
     // NOTE: 시/도

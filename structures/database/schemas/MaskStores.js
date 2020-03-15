@@ -1,6 +1,8 @@
 module.exports = async knex => {
   // NOTE: 보건복지부 국민안심병원
   await knex.schema.createTable('MaskStores', table => {
+    table.increments()
+
     // NOTE: 식별 코드
     table.integer('identify')
     // NOTE: 주소
@@ -29,7 +31,7 @@ module.exports = async knex => {
     table.string('stockStatus', 16)
     // NOTE: 마스크 재고 데이터 생성 일자
     table.datetime('stockUpdatedAt')
-    // NOTE: 데이터 생성 일자
+    // NOTE: 데이터 생성 일자 (로컬)
     table.datetime('updatedAt')
 
     return table

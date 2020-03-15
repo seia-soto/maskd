@@ -7,156 +7,192 @@ const fetch = require('../fetch')
 
 class MaskStores {
   constructor () {
-    this.cache = {
-      updateAt: 1000 * 60 * 2
-    }
     this.debug = debug(name + ':MaskStoresReports')
+    this.updateInterval = 1000 * 60 * 5
     this.updating = 0
-    this.updateMetadataAfter = 0 /* default: once per day / 2 (update interval) */
 
-    // NOTE: Run the updater first.
     this.update()
 
     setTimeout(() => {
       this.update()
 
-      setInterval(() => {
-        this.update()
-      }, this.cache.updateAt)
-    }, (new Date().setSeconds(0, 0, 0) + this.cache.updateAt) - Date.now())
+      setInterval(() => this.update(), this.updateInterval)
+    }, (new Date().setSeconds(0, 0, 0) + this.updateInterval) - Date.now())
   }
 
-  async updateStores (page) {
-    this.debug('updating the metadata of the stores: ' + page)
+  async getStoreDetails (page) {
+    const results = []
 
-    const now = Date.now()
-    const storeMetadataResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/stores/json?page=' + page)
+    const storeMetadataResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/stores/json?page=' + (page || 1))
     const storeMetadata = await storeMetadataResponse.json()
 
-    storeMetadata._updatedAt = now
+    // NOTE: If no `page` argument found, download all details.
+    if (!page) {
+      for (let i = 0; i < storeMetadata.storeInfos.length; i++) {
+        results.push(storeMetadata.storeInfos[i])
+      }
+      for (let i = 2; i <= storeMetadata.totalPages; i++) {
+        const details = await this.getStoreDetails(i)
 
-    for (let i = 0; i < storeMetadata.storeInfos.length; i++) {
-      const item = storeMetadata.storeInfos[i]
-
-      if (item.code) {
-        const existingData = await knex('MaskStores')
-          .where({
-            identify: item.code
-          })
-
-        if (!existingData.length) {
-          await knex('MaskStores')
-            .insert({
-              identify: item.code || '',
-              address: item.addr || '',
-              latitude: item.lat || -1,
-              longitude: item.lng || -1,
-              name: item.name || '',
-              type: parseInt(item.type || '0'),
-              stockReplenishedAt: 0,
-              stockStatus: 'unavailable',
-              stockUpdatedAt: 0,
-              updatedAt: now
-            })
-        } else {
-          await knex('MaskStores')
-            .update({
-              address: item.addr || '',
-              latitude: item.lat || -1,
-              longitude: item.lng || -1,
-              name: item.name || '',
-              type: parseInt(item.type || '0'),
-              updatedAt: now
-            })
-            .where({
-              identify: item.code || ''
-            })
+        for (let k = 0; k < details.storeInfos.length; k++) {
+          results.push(details.storeInfos[k])
         }
+      }
+
+      return results
+    } else {
+      return storeMetadata
+    }
+  }
+
+  async getMaskStatus (page) {
+    const results = []
+
+    const maskStatusResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/sales/json?page=' + (page || 1))
+    const maskStatus = await maskStatusResponse.json()
+
+    // NOTE: If no `page` argument found, download all details.
+    if (!page) {
+      for (let i = 0; i < maskStatus.sales.length; i++) {
+        results.push(maskStatus.sales[i])
+      }
+      for (let i = 2; i <= maskStatus.totalPages; i++) {
+        const details = await this.getMaskStatus(i)
+
+        for (let k = 0; k < details.sales.length; k++) {
+          results.push(details.sales[k])
+        }
+      }
+
+      return results
+    } else {
+      return maskStatus
+    }
+  }
+
+  async getExistingStoreDetails () {
+    const results = []
+
+    const totalCount = (await knex('MaskStores').count('id'))[0]['count(`id`)']
+
+    for (let i = 0; i < Math.floor(totalCount / 50) + 1; i++) {
+      const items = await knex('MaskStores')
+        .where('id', '>=', i * 50)
+        .andWhere('id', '<', (i * 50) + 50)
+
+      for (let k = 0; k < items.length; k++) {
+        results.push(items[k])
       }
     }
 
-    return storeMetadata
+    return results
+  }
+
+  async updateStores () {
+    this.debug('updating the store details')
+
+    const now = Date.now()
+    const insertionQueue = []
+
+    this.debug('downloading the store details data')
+
+    const latestData = await this.getStoreDetails()
+
+    this.debug('loading the existing store details data from database')
+
+    const existingData = await this.getExistingStoreDetails()
+
+    this.debug('validating new version and current version')
+
+    for (let i = 0; i < latestData.length; i++) {
+      if (!latestData[i].code) continue
+
+      const latestItem = latestData[i]
+      const existingItem = existingData.find(item => item.identify === Number(latestData[i].code))
+
+      if (!existingItem) {
+        insertionQueue.push({
+          identify: latestItem.code || '',
+          address: latestItem.addr || '',
+          latitude: latestItem.lat || '',
+          longitude: latestItem.lng || '',
+          name: latestItem.name || '',
+          type: parseInt(latestItem.type || '0'),
+          stockReplenishedAt: 0,
+          stockStatus: 'unavailable',
+          stockUpdatedAt: 0,
+          updatedAt: new Date(now)
+        })
+      }
+    }
+
+    this.debug('inserting data which not exists in the database: ' + insertionQueue.length)
+
+    for (let k = 0; k < insertionQueue.length; k++) {
+      await knex('MaskStores')
+        .insert(insertionQueue[k])
+    }
   }
 
   async updateMaskStatus (page) {
-    this.debug('updating the mask stock status of the stores: ' + page)
+    this.debug('updating the mask stock status')
 
     const now = Date.now()
-    const storeMaskStatusResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/sales/json?page=' + page)
-    const storeMaskStatus = await storeMaskStatusResponse.json()
+    const updateQueue = []
 
-    storeMaskStatus._updatedAt = now
+    this.debug('downloading the mask stock data')
 
-    for (let i = 0; i < storeMaskStatus.sales.length; i++) {
-      const item = storeMaskStatus.sales[i]
+    const latestData = await this.getMaskStatus()
 
-      if (item.code) {
-        const existingData = await knex('MaskStores')
-          .where({
-            identify: item.code
-          })
+    this.debug('loading the existing mask stock data from database')
 
-        if (existingData.length) {
-          await knex('MaskStores')
-            .update({
-              stockReplenishedAt: new Date(item.stock_at),
-              stockStatus: item.remain_stat,
-              stockUpdatedAt: new Date(item.created_at),
-              updatedAt: new Date(now)
-            })
-            .where({
-              identify: item.code || ''
-            })
-        }
+    const existingData = await this.getExistingStoreDetails()
+
+    this.debug('validating new version and current version')
+
+    for (let i = 0; i < latestData.length; i++) {
+      if (!latestData[i].code) continue
+
+      const latestItem = latestData[i]
+      const existingItem = existingData.find(item => item.identify === Number(latestItem.code))
+
+      if (existingItem && new Date(latestItem.created_at) > new Date(existingItem.updatedAt)) {
+        updateQueue.push({
+          identify: latestItem.code,
+          data: {
+            stockReplenishedAt: new Date(latestItem.stock_at),
+            stockStatus: latestItem.remain_stat,
+            stockUpdatedAt: new Date(latestItem.created_at),
+            updatedAt: new Date(now)
+          }
+        })
       }
     }
 
-    return storeMaskStatus
+    this.debug('updating newer versions of data: ' + updateQueue.length)
+
+    for (let k = 0; k < updateQueue.length; k++) {
+      await knex('MaskStores')
+        .update(updateQueue[k].data)
+        .where({
+          identify: updateQueue[k].identify
+        })
+    }
   }
 
   async update () {
-    if (this.updating) {
-      return
-    }
+    if (this.updating) return
 
     this.updating = 1
 
-    const now = Date.now()
-    const stores = {}
+    this.debug('updating the situation report data at ' + Date.now())
 
-    this.debug('updating the situation report data at ' + now)
-
-    if (!this.updateMetadataAfter) {
-      this.updateMetadataAfter = 30 * 24
-
-      // NOTE: Update the store metadata.
-      const storeData = await this.updateStores(1)
-
-      for (let i = 2; i <= storeData.totalPages; i++) {
-        const storeMetadata = await this.updateStores(i)
-      }
-    }
-
-    // NOTE: The status of mask stock won't update during 23h ~ 8h.
-    const currentHour = new Date(new Date().toUTCString()).getHours() + 1 + 9
-
-    if (currentHour < 8 || currentHour > 23) {
-      this.debug('skipped updating the status of mask stock data due to inactive API')
-
-      return
-    }
-
-    // NOTE: Update the mask status.
-    const stockData = await this.updateMaskStatus(1)
-
-    for (let i = 2; i <= stockData.totalPages; i++) {
-      const storeMaskStatus = await this.updateMaskStatus(i)
-    }
+    await this.updateStores()
+    await this.updateMaskStatus()
 
     this.debug('updated the situation report')
 
     this.updating = 0
-    this.updateMetadataAfter -= 1
   }
 }
 

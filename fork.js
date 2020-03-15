@@ -19,7 +19,7 @@ const initFn = async () => {
     .use(useCORS(/* Use request origin header. */))
     .use(routers.routes())
     .use(routers.allowedMethods())
-    .listen(config.app.port, () => app.context.debug(`starting 'maskd' API server (fork, slave) at ${Date.now()}.`))
+    .listen(config.app.port + 1, () => app.context.debug(`starting 'maskd' API server (fork, slave) at ${Date.now()}.`))
 }
 
 initFn()

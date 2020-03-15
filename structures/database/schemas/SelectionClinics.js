@@ -1,6 +1,8 @@
 module.exports = async knex => {
   // NOTE: 보건복지부 선별진료소
   await knex.schema.createTable('SelectionClinics', table => {
+    table.increments()
+
     // NOTE: 연차
     table.integer('identify')
     // NOTE: 검체 선별 가능 여부
