@@ -156,7 +156,7 @@ class MaskStores {
       const latestItem = latestData[i]
       const existingItem = existingData.find(item => item.identify === Number(latestItem.code))
 
-      if (existingItem && new Date(latestItem.created_at) > new Date(existingItem.updatedAt)) {
+      if (existingItem && new Date(latestItem.created_at).getTime() > existingItem.updatedAt + 1000 * 60 * 60 * 9) {
         updateQueue.push({
           identify: latestItem.code,
           data: {
@@ -187,7 +187,7 @@ class MaskStores {
 
     this.debug('updating the situation report data at ' + Date.now())
 
-    await this.updateStores()
+    // await this.updateStores()
     await this.updateMaskStatus()
 
     this.debug('updated the situation report')

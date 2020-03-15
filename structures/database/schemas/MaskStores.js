@@ -29,9 +29,9 @@ module.exports = async knex => {
       }
     */
     table.string('stockStatus', 16)
-    // NOTE: 마스크 재고 데이터 생성 일자
+    // NOTE: 마스크 재고 데이터 생성 일자 (KST)
     table.datetime('stockUpdatedAt')
-    // NOTE: 데이터 생성 일자 (로컬)
+    // NOTE: 데이터 생성 일자 (UTC)
     table.datetime('updatedAt')
 
     return table
