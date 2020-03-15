@@ -9,7 +9,12 @@ module.exports = async ctx => {
   body.scope = body.scope || 'name'
   // body.keyword = `%${body.keyword}%`
 
-  if (String(body.keyword || '').length < 2) {
+  const invalidParameter =
+    (String(body.keyword || '').length < 2) ||
+    (isNaN(body.limit)) ||
+    (isNaN(body.page))
+
+  if (invalidParameter) {
     ctx.body = {
       error: 'InvalidParameter'
     }
