@@ -6,9 +6,9 @@ module.exports = async knex => {
     // NOTE: 주소
     table.string('address', 128)
     // NOTE: 위도
-    table.integer('latitude')
+    table.string('latitude', 32)
     // NOTE: 경도
-    table.integer('longitude')
+    table.string('longitude', 32)
     // NOTE: 이름
     table.string('name', 32)
     // NOTE: 종류 ([null, 약국, 우체국, 농협])

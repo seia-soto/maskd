@@ -72,8 +72,13 @@ This API adopted following rate-limiting policy: `8r/s up to 32 burst requests p
 
 ## Limitations
 
-- Request
-  - This API doesn't support `multipart` form data.
+### Request
+
+- This API doesn't support `multipart` form data.
+
+### Delay
+
+- The data of the mask stock status have 5~10 mins of delay.
 
 ## Routes
 
@@ -137,6 +142,8 @@ Get the list of available stores that sell masks.
 - `scope`: The key name of values such as `identify`, `city`, ... (default: `clinicName`)
 - `keyword`: The string need to be used to search items. This value should be 2 words at least. (default: `none`)
 
+#### Response form
+
 ```json
 [
   {
@@ -153,3 +160,15 @@ Get the list of available stores that sell masks.
   }
 ]
 ```
+
+- type
+  - `1`: pharmacy
+  - `2`: post office
+  - `3`: NH
+
+- stockStatus (the number of the masks available)
+  - `plenty`: 100+,
+  - `some`: 30+,
+  - `few`: 2+,
+  - `empty`: 1 or lower,
+  - `break`: stopped selling
