@@ -96,13 +96,14 @@ Get the list of available selection clinics.
 ```json
 [
   {
-    "identify": 2,
-    "samplingAvailable": 1,
-    "province": "서울",
-    "city": "강남구",
-    "clinicName": "삼성서울병원",
-    "address": "서울특별시 강남구 일원로 81 (일원동, 삼성의료원)",
-    "representativeContact": "02-3410-2114"
+   "id": 3,
+   "identify": 3,
+   "samplingAvailable": 1,
+   "province": "서울",
+   "city": "강남구",
+   "clinicName": "연세대학교의과대학강남세브란스병원",
+   "address": "서울특별시 강남구 언주로 211, 강남세브란스병원 (도곡동)",
+   "representativeContact": "02-2019-3114"
   }
 ]
 ```
@@ -121,6 +122,7 @@ Get the list of available safely separated clinics.
 ```json
 [
   {
+    "id": 1,
     "identify": 1,
     "province": "서울",
     "city": "강남구",
@@ -139,6 +141,8 @@ Get the list of available stores that sell masks.
 
 #### Request form
 
+- `limit`: The number of items you want to get at the time. (default: `250`, max: `1000`)
+- `page`: The number that express the `n`th part of the result if the size of the result is bigger than `limit` parameter. (default: `1`)
 - `scope`: The key name of values such as `identify`, `city`, ... (default: `clinicName`)
 - `keyword`: The string need to be used to search items. This value should be 2 words at least. (default: `none`)
 
@@ -147,16 +151,17 @@ Get the list of available stores that sell masks.
 ```json
 [
   {
-    "identify": 12808776,
-    "address": "서울특별시 중구 다산로 72 1층 (신당동, 서울시니어스타워)",
-    "latitude": 38,
-    "longitude": 127,
-    "name": "서울시니어스약국",
+    "id": 8,
+    "identify": 11889446,
+    "address": "서울특별시 강남구 압구정로 108 1층 7호 (신사동)",
+    "latitude": "37.5228904",
+    "longitude": "127.0206138",
+    "name": "가로수길약국",
     "type": 1,
-    "stockReplenishedAt": "2020-03-15T08:54:00.000Z",
-    "stockStatus": "plenty",
-    "stockUpdatedAt": "2020-03-15T12:30:00.000Z",
-    "updatedAt": null
+    "stockReplenishedAt": null,
+    "stockStatus": "unavailable",
+    "stockUpdatedAt": null,
+    "updatedAt": "2020-03-15T14:19:38.000Z"
   }
 ]
 ```
