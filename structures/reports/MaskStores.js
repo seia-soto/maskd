@@ -187,7 +187,7 @@ class MaskStores {
 
     this.debug('updating the situation report data at ' + Date.now())
 
-    // await this.updateStores()
+    await this.updateStores()
     await this.updateMaskStatus()
 
     this.debug('updated the situation report')
