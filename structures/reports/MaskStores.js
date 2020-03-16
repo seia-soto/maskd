@@ -8,7 +8,7 @@ const fetch = require('../fetch')
 class MaskStores {
   constructor () {
     this.debug = debug(name + ':MaskStoresReports')
-    this.updateInterval = 1000 * 60 * 5
+    this.updateInterval = 1000 * 60 * 2
     this.updating = 0
 
     this.debug('creating the update function chain')
@@ -17,52 +17,68 @@ class MaskStores {
   }
 
   async getStoreDetails (page) {
-    const results = []
+    try {
+      const results = []
 
-    const storeMetadataResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/stores/json?page=' + (page || 1))
-    const storeMetadata = await storeMetadataResponse.json()
+      const storeMetadataResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/stores/json?page=' + (page || 1))
+      const storeMetadata = await storeMetadataResponse.json()
 
-    // NOTE: If no `page` argument found, download all details.
-    if (!page) {
-      for (let i = 0; i < storeMetadata.storeInfos.length; i++) {
-        results.push(storeMetadata.storeInfos[i])
-      }
-      for (let i = 2; i <= storeMetadata.totalPages; i++) {
-        const details = await this.getStoreDetails(i)
-
-        for (let k = 0; k < details.storeInfos.length; k++) {
-          results.push(details.storeInfos[k])
+      // NOTE: If no `page` argument found, download all details.
+      if (!page) {
+        for (let i = 0; i < storeMetadata.storeInfos.length; i++) {
+          results.push(storeMetadata.storeInfos[i])
         }
-      }
+        for (let i = 2; i <= storeMetadata.totalPages; i++) {
+          const details = await this.getStoreDetails(i)
 
-      return results
-    } else {
-      return storeMetadata
+          for (let k = 0; k < details.storeInfos.length; k++) {
+            results.push(details.storeInfos[k])
+          }
+        }
+
+        return results
+      } else {
+        return storeMetadata
+      }
+    } catch (error) {
+      this.debug('downloading store details again due to network error')
+
+      const retry = await this.getMaskStatus(page || 1)
+
+      return retry
     }
   }
 
   async getMaskStatus (page) {
-    const results = []
+    try {
+      const results = []
 
-    const maskStatusResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/sales/json?page=' + (page || 1))
-    const maskStatus = await maskStatusResponse.json()
+      const maskStatusResponse = await fetch('https://8oi9s0nnth.apigw.ntruss.com/corona19-masks/v1/sales/json?page=' + (page || 1))
+      const maskStatus = await maskStatusResponse.json()
 
-    // NOTE: If no `page` argument found, download all details.
-    if (!page) {
-      for (let i = 0; i < maskStatus.sales.length; i++) {
-        results.push(maskStatus.sales[i])
-      }
-      for (let i = 2; i <= maskStatus.totalPages; i++) {
-        const details = await this.getMaskStatus(i)
-
-        for (let k = 0; k < details.sales.length; k++) {
-          results.push(details.sales[k])
+      // NOTE: If no `page` argument found, download all details.
+      if (!page) {
+        for (let i = 0; i < maskStatus.sales.length; i++) {
+          results.push(maskStatus.sales[i])
         }
-      }
+        for (let i = 2; i <= maskStatus.totalPages; i++) {
+          const details = await this.getMaskStatus(i)
 
-      return results
-    } else {
-      return maskStatus
+          for (let k = 0; k < details.sales.length; k++) {
+            results.push(details.sales[k])
+          }
+        }
+
+        return results
+      } else {
+        return maskStatus
+      }
+    } catch (error) {
+      this.debug('downloading mask status again due to network error')
+
+      const retry = await this.getMaskStatus(page || 1)
+
+      return retry
     }
   }
 
@@ -96,7 +112,14 @@ class MaskStores {
 
     this.debug('loading the existing store details data from database')
 
-    const existingData = await this.getExistingStoreDetails()
+    const existingDataSource = await this.getExistingStoreDetails()
+    const existingData = {}
+
+    for (let i = 0; i < existingDataSource.length; i++) {
+      if (!existingDataSource[i].identify) continue
+
+      existingData[existingDataSource[i].identify] = existingDataSource[i]
+    }
 
     this.debug('validating new version and current version')
 
@@ -104,7 +127,7 @@ class MaskStores {
       if (!latestData[i].code) continue
 
       const latestItem = latestData[i]
-      const existingItem = existingData.find(item => item.identify === Number(latestData[i].code))
+      const existingItem = existingData[Number(latestData[i].code)]
 
       if (!existingItem) {
         insertionQueue.push({
@@ -142,7 +165,14 @@ class MaskStores {
 
     this.debug('loading the existing mask stock data from database')
 
-    const existingData = await this.getExistingStoreDetails()
+    const existingDataSource = await this.getExistingStoreDetails()
+    const existingData = {}
+
+    for (let i = 0; i < existingDataSource.length; i++) {
+      if (!existingDataSource[i].identify) continue
+
+      existingData[existingDataSource[i].identify] = existingDataSource[i]
+    }
 
     this.debug('validating new version and current version')
 
@@ -150,9 +180,9 @@ class MaskStores {
       if (!latestData[i].code) continue
 
       const latestItem = latestData[i]
-      const existingItem = existingData.find(item => item.identify === Number(latestItem.code))
+      const existingItem = existingData[Number(latestItem.code)]
 
-      if (existingItem && (!latestItem.stockUpdatedAt || new Date(latestItem.created_at).getTime() > existingItem.updatedAt + 1000 * 60 * 60 * 9)) {
+      if (existingItem && (!latestItem.stockUpdatedAt || new Date(latestItem.created_at) > existingItem.stockUpdatedAt + 1000 * 60 * 60 * 9)) {
         updateQueue.push({
           identify: latestItem.code,
           data: {
@@ -196,7 +226,11 @@ class MaskStores {
 
       this.debug('updated the situation report')
 
-      setTimeout(() => this.update(), 1000 * 60)
+      setTimeout(() => {
+        this.debug('scheduled the update in 1 minute')
+
+        this.update()
+      }, 1000 * 60)
     }
   }
 }
