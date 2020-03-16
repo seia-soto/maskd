@@ -108,6 +108,9 @@ Get the list of available selection clinics.
 ]
 ```
 
+- `id`: The identification tag for internal use.
+- `identify`: The national identification code.
+
 ### POST: /clinics/safelySeparated
 
 Get the list of available safely separated clinics.
@@ -134,6 +137,10 @@ Get the list of available safely separated clinics.
   }
 ]
 ```
+
+- `id`: The identification tag for internal use.
+- `identify`: The national identification code.
+- `availableAt`: Datetime in KST.
 
 ### POST: /masks/stores
 
@@ -166,14 +173,17 @@ Get the list of available stores that sell masks.
 ]
 ```
 
+- `id`: The identification tag for internal use.
+- `identify`: The national identification code.
 - type
   - `1`: pharmacy
   - `2`: post office
   - `3`: NH
-
 - stockStatus (the number of the masks available)
   - `plenty`: 100+,
   - `some`: 30+,
   - `few`: 2+,
   - `empty`: 1 or lower,
   - `break`: stopped selling
+- `stockUpdatedAt`: (KST) The last time that checked the status of the mask stock in each store.
+- `updatedAt`: (UTC) The last time updated the data from official source.

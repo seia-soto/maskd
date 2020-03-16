@@ -11,13 +11,9 @@ class MaskStores {
     this.updateInterval = 1000 * 60 * 5
     this.updating = 0
 
+    this.debug('creating the update function chain')
+
     this.update()
-
-    setTimeout(() => {
-      this.update()
-
-      setInterval(() => this.update(), this.updateInterval)
-    }, (new Date().setSeconds(0, 0, 0) + this.updateInterval) - Date.now())
   }
 
   async getStoreDetails (page) {
@@ -181,18 +177,27 @@ class MaskStores {
   }
 
   async update () {
-    if (this.updating) return
+    const now = Date.now()
+    const currentHourKST = new Date(now).getHours() + 9
 
-    this.updating = 1
+    if (currentHourKST < 8) {
+      let nextUpdate = new Date(now).setHours(8, 0, 0, 0)
 
-    this.debug('updating the situation report data at ' + Date.now())
+      setTimeout(() => {
+        this.debug('scheduled the update at ' + nextUpdate)
 
-    await this.updateStores()
-    await this.updateMaskStatus()
+        this.update()
+      }, nextUpdate - now)
+    } else {
+      this.debug('updating the situation report data at ' + Date.now())
 
-    this.debug('updated the situation report')
+      await this.updateStores()
+      await this.updateMaskStatus()
 
-    this.updating = 0
+      this.debug('updated the situation report')
+
+      setTimeout(() => this.update(), 1000 * 60)
+    }
   }
 }
 
