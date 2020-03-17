@@ -1,6 +1,12 @@
 const { knex } = require('../../structures/database')
 
 module.exports = async ctx => {
+  ctx.body = {
+    error: 'serviceUnavailable'
+  }
+
+  return
+
   const body = ctx.request.body
   const searchOpts = {}
 

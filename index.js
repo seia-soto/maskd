@@ -11,7 +11,7 @@ const pkg = require('./package')
 const app = new Koa()
 
 const {
-  MaskStores,
+  // MaskStores,
   SafelySeparatedClinics,
   SelectionClinic
 } = structures.reports
@@ -21,7 +21,7 @@ app.context.debug = debug(pkg.name)
 app.context.pkg = pkg
 
 app.context.workers = {
-  MaskStores: new MaskStores(),
+  // MaskStores: new MaskStores(),
   SafelySeparatedClinics: new SafelySeparatedClinics(),
   SelectionClinic: new SelectionClinic()
 }
