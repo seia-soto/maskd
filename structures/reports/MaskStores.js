@@ -8,7 +8,7 @@ const fetch = require('../fetch')
 class MaskStores {
   constructor () {
     this.debug = debug(name + ':MaskStoresReports')
-    this.updateInterval = 1000 * 60 * 2
+    this.updateAfter = 1000 * 60 * 2
     this.updating = 0
 
     this.debug('creating the update function chain')
@@ -230,7 +230,7 @@ class MaskStores {
         this.debug('scheduled the update in 1 minute')
 
         this.update()
-      }, 1000 * 60)
+      }, this.updateAfter)
     }
   }
 }
