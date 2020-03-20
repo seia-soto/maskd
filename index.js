@@ -11,7 +11,7 @@ const pkg = require('./package')
 const app = new Koa()
 
 const {
-  // MaskStores,
+  MaskStores,
   SafelySeparatedClinics,
   SelectionClinic
 } = structures.reports

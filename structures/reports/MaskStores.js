@@ -9,7 +9,6 @@ class MaskStores {
   constructor () {
     this.debug = debug(name + ':MaskStoresReports')
     this.updateAfter = 1000 * 60 * 2
-    this.updating = 0
 
     this.debug('creating the update function chain')
 
@@ -227,7 +226,7 @@ class MaskStores {
       this.debug('updated the situation report')
 
       setTimeout(() => {
-        this.debug('scheduled the update in 1 minute')
+        this.debug('scheduled the update at ' + Date.now() + this.updateAfter)
 
         this.update()
       }, this.updateAfter)
